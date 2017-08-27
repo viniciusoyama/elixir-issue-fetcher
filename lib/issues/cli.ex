@@ -46,6 +46,7 @@ defmodule Issues.CLI do
     |> decode_response
     |> sort_into_ascending_order
     |> Enum.take(count)
+    |> print_table_for_columns(["number", "created_at", "title"])
   end
 
   def decode_response({:ok, body}), do: body
@@ -59,6 +60,25 @@ defmodule Issues.CLI do
   def sort_into_ascending_order(issues) do
     Enum.sort(issues, fn i1, i2 ->
       Map.get(i1, "created_at") <= Map.get(i2, "created_at")
+    end)
+  end
+
+  def print_table_for_columns(issues, columns) do
+    print_table_header(columns)
+    print_table_rows(issues)
+  end
+
+  defp print_table_header(headers) do
+    headers
+    |> Enum.join(" | ")
+    |> IO.puts
+  end
+
+  defp print_table_rows(rows) do
+    Enum.each(rows, fn row ->
+      [row["number"], row["created_at"], row["title"]]
+      |> Enum.join(" | ")
+      |> IO.puts
     end)
   end
 end
