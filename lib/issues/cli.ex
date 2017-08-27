@@ -6,7 +6,11 @@ defmodule Issues.CLI do
   """
 
   def run(argv) do
-    parse_args(argv)
+    argv
+    |> parse_args
+    |> process
+    |> decode_response
+    |> sort_into_ascending_order
   end
 
   @doc """
@@ -33,6 +37,29 @@ defmodule Issues.CLI do
     end
   end
 
+  def process(:help) do
+    IO.puts """
+    usar: issues <user> <project> [count | #{@default_count}]
+    """
+  end
+
+  def process({user, project, count}) do
+    Issues.GithubIssues.fetch(user, project)
+  end
+
+  def decode_response({:ok, body}), do: body
+
+  def decode_response({:error, error}) do
+    { _, message } = List.keyfind(error, "message", 0)
+    IO.puts "Error fetching from Github: #{message}"
+    System.halt(2)
+  end
+
+  def sort_into_ascending_order(issues) do
+    Enum.sort(issues, fn i1, i2 ->
+      Map.get(i1, "created_at") <= Map.get(i2, "created_at")
+    end)
+  end
 end
 
 
