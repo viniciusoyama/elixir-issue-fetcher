@@ -9,8 +9,6 @@ defmodule Issues.CLI do
     argv
     |> parse_args
     |> process
-    |> decode_response
-    |> sort_into_ascending_order
   end
 
   @doc """
@@ -45,6 +43,9 @@ defmodule Issues.CLI do
 
   def process({user, project, count}) do
     Issues.GithubIssues.fetch(user, project)
+    |> decode_response
+    |> sort_into_ascending_order
+    |> Enum.take(count)
   end
 
   def decode_response({:ok, body}), do: body
